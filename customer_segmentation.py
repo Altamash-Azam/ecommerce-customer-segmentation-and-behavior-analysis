@@ -82,3 +82,38 @@ rfm = pd.merge(rfm, monetary_df, on='CustomerID')
 print("\n--- RFM Features Created ---")
 print("RFM DataFrame (first 5 rows):")
 print(rfm.head())
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+
+# --- Step 4: Preprocess Data for Modeling ---
+
+# --- Visualize data distribution ---
+print("\n--- Visualizing data distributions before scaling ---")
+fig, axes = plt.subplots(3, 1, figsize=(10, 8))
+sns.histplot(rfm['Recency'], ax=axes[0], kde=True).set_title('Recency Distribution')
+sns.histplot(rfm['Frequency'], ax=axes[1], kde=True).set_title('Frequency Distribution')
+sns.histplot(rfm['Monetary'], ax=axes[2], kde=True).set_title('Monetary Distribution')
+plt.tight_layout()
+plt.show()
+
+# --- Apply Log Transformation to reduce skewness ---
+# We use np.log1p which is log(1+x) to handle potential zero values
+rfm_log = np.log1p(rfm[['Recency', 'Frequency', 'Monetary']])
+
+# --- Scale the data ---
+# Initialize the scaler
+scaler = StandardScaler()
+
+# Fit and transform the log-transformed data
+scaled_data = scaler.fit_transform(rfm_log)
+
+# Create a new DataFrame with the scaled data
+rfm_scaled = pd.DataFrame(scaled_data, columns=rfm_log.columns)
+
+
+print("\n--- Data Preprocessing Complete ---")
+print("Scaled RFM data (first 5 rows):")
+print(rfm_scaled.head())
