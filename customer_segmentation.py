@@ -1,5 +1,10 @@
 import pandas as pd
 import datetime as dt
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
 
 # Define the path to your dataset
 file_path = 'Online Retail.xlsx'
@@ -83,10 +88,7 @@ print("\n--- RFM Features Created ---")
 print("RFM DataFrame (first 5 rows):")
 print(rfm.head())
 
-import matplotlib.pyplot as plt
-import seaborn as sns
-import numpy as np
-from sklearn.preprocessing import StandardScaler
+
 
 # --- Step 4: Preprocess Data for Modeling ---
 
@@ -117,3 +119,50 @@ rfm_scaled = pd.DataFrame(scaled_data, columns=rfm_log.columns)
 print("\n--- Data Preprocessing Complete ---")
 print("Scaled RFM data (first 5 rows):")
 print(rfm_scaled.head())
+
+
+
+
+# --- Step 5: Build K-Means Model ---
+
+# --- Find the optimal number of clusters using the Elbow Method ---
+inertia = []
+k_range = range(1, 11)
+
+for k in k_range:
+    kmeans = KMeans(n_clusters=k, init='k-means++', random_state=42, n_init=10)
+    kmeans.fit(rfm_scaled)
+    inertia.append(kmeans.inertia_)
+
+# Plot the Elbow Curve
+plt.figure(figsize=(10, 6))
+plt.plot(k_range, inertia, marker='o', linestyle='--')
+plt.title('Elbow Method For Optimal k')
+plt.xlabel('Number of Clusters (k)')
+plt.ylabel('Inertia')
+plt.xticks(k_range)
+plt.grid(True)
+plt.show()
+
+# --- Build the final model with the optimal k ---
+# Based on the elbow plot, let's choose 4 clusters.
+optimal_k = 4
+kmeans = KMeans(n_clusters=optimal_k, init='k-means++', random_state=42, n_init=10)
+
+# Assign clusters to each customer
+rfm['Cluster'] = kmeans.fit_predict(rfm_scaled)
+
+# --- Analyze the clusters ---
+print("\n--- Cluster Analysis ---")
+# Calculate the average RFM values for each cluster
+cluster_summary = rfm.groupby('Cluster')[['Recency', 'Frequency', 'Monetary']].mean().reset_index()
+print("Average RFM values for each cluster:")
+print(cluster_summary)
+
+
+# Visualize the clusters
+plt.figure(figsize=(10, 6))
+sns.scatterplot(data=rfm, x='Recency', y='Frequency', hue='Cluster', palette='viridis', s=100, alpha=0.7)
+plt.title('Customer Segments by Recency and Frequency')
+plt.show()
+
