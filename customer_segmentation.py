@@ -166,3 +166,33 @@ sns.scatterplot(data=rfm, x='Recency', y='Frequency', hue='Cluster', palette='vi
 plt.title('Customer Segments by Recency and Frequency')
 plt.show()
 
+
+# Create a mapping from cluster number to a descriptive name
+# NOTE: The cluster numbers and their meanings might change each time you run the model
+# You must look at the `cluster_summary` table above to define this mapping correctly.
+# For this example, let's assume the following profile based on a typical run:
+# Cluster 0: High F, High M, Low R -> Champions
+# Cluster 1: Low F, Low M, High R -> At-Risk
+# Cluster 2: Low F, Low M, Low R  -> New Customers
+# Cluster 3: Mid F, Mid M, Mid R  -> Potential Loyalists
+
+cluster_map = {
+    0: 'Champions 🏆',
+    1: 'At-Risk 😟',
+    2: 'New Customers 🌱',
+    3: 'Potential Loyalists ⭐'
+}
+
+# Add a new column with the descriptive label
+rfm['Segment'] = rfm['Cluster'].map(cluster_map)
+
+
+print("\n--- Final Segments ---")
+# Display the first 10 customers with their new segment label
+print(rfm.head(10))
+
+# Visualize the segments with new labels
+plt.figure(figsize=(10, 6))
+sns.scatterplot(data=rfm, x='Recency', y='Frequency', hue='Segment', palette='viridis', s=100, alpha=0.7)
+plt.title('Customer Segments by Recency and Frequency')
+plt.show()
